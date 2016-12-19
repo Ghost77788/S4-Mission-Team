@@ -65,7 +65,7 @@ if (!isClass (configFile >> "CfgPatches" >> "Ares")) exitWith {
     [objNull, "'Clear Loadout' action added to object."] call BIS_fnc_showCuratorFeedbackMessage;
 }] call Ares_fnc_RegisterCustomModule;
 
-["Arsenal", " Add 13th Arsenal", {
+["Arsenal", " Add 3dMRB Arsenal", {
     params ["_pos", "_object"];
 
     if (isNull _object) exitWith {
@@ -77,7 +77,7 @@ if (!isClass (configFile >> "CfgPatches" >> "Ares")) exitWith {
     [objNull, "13th Arsenal objects added."] call BIS_fnc_showCuratorFeedbackMessage;
 }] call Ares_fnc_RegisterCustomModule;
 
-["Arsenal", " Add 13th Box Equipment", {
+["Arsenal", " Add 3dMRB Box Equipment", {
     params ["_pos", "_object"];
 
     if (isNull _object) exitWith {
