@@ -3,6 +3,34 @@ if (!isClass (configFile >> "CfgPatches" >> "Ares")) exitWith {
 };
 // Ares is loaded, register the custom modules.
 
+["AI Behaviours", "Turn ON Auto-Combat",  {
+    params ["_pos", "_object"];
+
+	if (isNull _object) exitWith {
+		[objNull, "No object under cursor."] call BIS_fnc_showCuratorFeedbackMessage;
+    };
+	
+	_groupUnderCursor = units _object;
+	{
+		_x enableAI "AUTOCOMBAT";
+	}forEach _groupUnderCursor;
+	[objNull, "AutoCombat turned ON for group"] call BIS_fnc_showCuratorFeedbackMessage;
+}] call Ares_fnc_RegisterCustomModule;
+
+["AI Behaviours", "Turn OFF Auto-Combat",  {
+    params ["_pos", "_object"];
+
+	if (isNull _object) exitWith {
+		[objNull, "No object under cursor."] call BIS_fnc_showCuratorFeedbackMessage;
+    };
+    
+	_groupUnderCursor = units _object;
+    {
+		_x disableAI "AUTOCOMBAT";
+	}forEach _groupUnderCursor;
+	[objNull, "AutoCombat turned OFF for group"] call BIS_fnc_showCuratorFeedbackMessage;
+}] call Ares_fnc_RegisterCustomModule;
+
 ["AI Behaviours", "Turn Engine On/Off",
 {
     params ["_pos", "_object"];
@@ -21,6 +49,59 @@ if (!isClass (configFile >> "CfgPatches" >> "Ares")) exitWith {
     _object engineOn _state;
 }
 ] call Ares_fnc_RegisterCustomModule;
+
+["Arsenal", "13th Create Resupply Box", {
+    params ["_pos", "_object"];
+	
+   // Show the user the dialog
+    _dialogResult = [
+        "Create Resupply Box",
+        [
+            ["Insert", ["Ground","Air"]],
+			["Visual", ["None","Smoke White","Smoke Red","Smoke Blue","Infrared","Flare White","Flare Red","Chemlight Green","Chemlight Red"]]
+        ]
+    ] call Ares_fnc_ShowChooseDialog;
+	
+    if (_dialogResult isEqualTo []) exitWith {
+        [objNull, "No input given!"] call bis_fnc_showCuratorFeedbackMessage;
+    };
+
+    // Get the data from the dialog to use when choosing what units to spawn
+    _dialogResult params ["_dialogInsert","_dialogVisual"];
+	
+	_visual = ["None","SmokeShell","SmokeShellRed","SmokeShellBlue","B_IRStrobe","F_20mm_White","F_20mm_Red","Chemlight_green","Chemlight_red"] select _dialogVisual;
+	if (_dialogInsert isEqualTo 0) then 
+	{
+		_crate = createVehicle ["B_supplyCrate_F", _pos, [], 0, 'NONE'];
+		[[_crate], MEU_fnc_addResupply] remoteExec ["call", 0, true];
+		if !(_dialogVisual isEqualTo 0) then 
+		{
+			_smoke = createVehicle [_visual, _pos, [], 0, 'NONE'];
+			_smoke attachTo [_crate, [0.7, 0, -0.3]];
+		};
+		{_x addCuratorEditableObjects [[_crate], true]; } foreach allCurators;
+	};
+	if (_dialogInsert isEqualTo 1) then
+	{
+		_crate = createVehicle ["B_supplyCrate_F", [(_pos select 0),(_pos select 1),((_pos select 2)+ 500)], [], 0, 'NONE'];
+		
+		waitUntil {((getPosATL _crate) select 2) < 110};
+		
+		_parachute = createVehicle ["B_Parachute_02_F", position _crate, [], 0, 'NONE'];
+		_crate attachTo [_parachute, [0, 0, 1]];
+		
+		if !(_dialogVisual isEqualTo 0) then 
+		{
+			_smoke = createVehicle [_visual, _pos, [], 0, 'NONE'];
+			_smoke attachTo [_crate, [0.7, 0, -0.3]];
+		};
+		
+		[[_crate], MEU_fnc_addResupply] remoteExec ["call", 0, true];
+		{_x addCuratorEditableObjects [[_crate], true]; } foreach allCurators;
+	};
+	
+    [objNull, "Resupply Box Created."] call BIS_fnc_showCuratorFeedbackMessage;
+}] call Ares_fnc_RegisterCustomModule;
 
 ["AI Behaviours", "Dismount Vehicle",
 {
